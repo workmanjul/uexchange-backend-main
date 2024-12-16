@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `News` ADD COLUMN `status` BOOLEAN NOT NULL DEFAULT false;

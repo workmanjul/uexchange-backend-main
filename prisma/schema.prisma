@@ -1,0 +1,263 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  name      String?
+  password  String?
+  hashedRt String?
+  publish Boolean @default(true)
+  
+  isDefault Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  roles UserRoles[]
+  permissions UserPermissions[]
+  office      OfficeLocation?   @relation(fields: [officeId], references: [id],onDelete: SetNull)
+  officeId    Int?           // Nullable foreign key referencing OfficeLocation id
+  
+}
+model Role {
+  id        Int      @id @default(autoincrement())
+  name     String   @unique
+  isMain Boolean @default(false)
+  users  UserRoles[]
+  permissions  PermissionRoles[]
+}
+model UserRoles{
+  user      User     @relation(fields: [userId], references: [id],onDelete: Cascade)
+  userId     Int // relation scalar field (used in the `@relation` attribute above)
+  role   Role @relation(fields: [roleId], references: [id],onDelete: Cascade)
+  roleId Int // relation scalar field (used in the `@relation` attribute above)
+
+  @@id([userId, roleId])
+}
+
+model Office{
+  id        Int      @id @default(autoincrement())
+  name     String   @unique
+  location String 
+}
+
+
+
+model Permission {
+  id        Int      @id @default(autoincrement())
+  name     String   @unique
+  publish  Boolean  @default(true)
+  roles  PermissionRoles[]
+  users UserPermissions[]
+}
+model UserPermissions{
+  user      User     @relation(fields: [userId], references: [id],onDelete: Cascade)
+  userId     Int // relation scalar field (used in the `@relation` attribute above)
+  permission Permission @relation(fields:[permissionId],references: [id],onDelete: Cascade)
+  permissionId Int
+  @@id([userId,permissionId])
+}
+model PermissionRoles {
+  roleId      Int
+  role        Role              @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permissionId Int
+  permission  Permission        @relation(fields: [permissionId], references: [id],onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+}
+
+model News{
+  id        Int      @id @default(autoincrement())
+  name      String  
+  description String @db.Text
+  image String?
+  status Boolean @default(false)
+}
+
+model Faq{
+  id        Int      @id @default(autoincrement())
+  question      String  @db.Text
+  answer String @db.Text
+  status Boolean @default(false)
+}
+
+model ExchangeRate{
+  id Int @id @default(autoincrement())
+  country String
+  currency String
+  code String
+  spot_rate Float
+  cxi_buy Float
+  cxi_sell Float
+  my_buy_target Float
+  my_sell_target Float
+  uce_buy_rate Float @default(0.00)
+  uce_sell_rate Float @default(0.00)
+  cxi_buy_rate Float @default(0.00)
+  cxi_sell_rate Float @default(0.00)
+  compared_with_cxi_buy Float  @default(0.00)
+  compared_with_cxi_sell Float  @default(0.00)
+  suggested_buy_rate Float  @default(0.00)
+  suggested_sell_rate Float @default(0.00)
+  status Boolean @default(false)
+  round_up_to Int @default(3)
+  currency_type String?
+  inventory Inventory[]
+  
+  
+}
+model OfficeLocation{
+  id Int @id @default(autoincrement())
+  location String
+  address1 String @default("")
+  address2 String @default("")
+  postal_code String @default("")
+  phone_number String @default("")
+  users User[]
+  inventory Inventory[]
+  onHold OnHold[]
+
+}
+
+model Transactions {
+  id Int @id @default(autoincrement())
+  country String
+  country_id Int
+  pay_in String
+  currency String
+  code String
+  we_buy Float @default(0.00)
+  we_sell Float @default(0.00)
+  cash Float @default(0.00)
+  interac Float @default(0.00)
+  money_order Float @default(0.00)
+  transaction_type String
+  change Float @default(0.00)
+  deleteStatus Boolean @default(false)
+  delete_message String?
+  other_reasons String?
+  unusual_behaviour Boolean @default(false)
+  hesitate_to_provide_id Boolean @default(false)
+  uncommon_question Boolean @default(false)
+  frequent_transaction Boolean @default(false)
+  red_flag Boolean @default(false)
+  carts TransactionCart[]
+  customer Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  customerId Int?
+  invoice_num Int?
+  total Float @default(0.00)
+  createdAt DateTime @default(now())
+}
+
+
+model TransactionCart{
+  id Int @id @default(autoincrement())
+  transaction      Transactions   @relation(fields: [transactionId], references: [id],onDelete:Cascade)
+  transactionId    Int    
+  exchange_rate_id Int       
+  currency String
+  code String
+  currency_amount Float  @default(0.00)
+  pay_in String?
+  total Float  @default(0.00)
+  rate Float  @default(0.00)
+  createdAt DateTime @default(now())
+}
+
+model Customer {
+  id Int @id @default(autoincrement())
+  transactions Transactions[]
+  customer String
+  first_name String
+  last_name String
+  dob String?
+  id_type String?
+  id_number String?
+  expiry_date String?
+  place_of_issue String?
+  phone String?
+  address String?
+  city String?
+  province String?
+  postal_code String?
+  occupation String?
+  business_phone String?
+  createdAt DateTime @default(now())
+}
+
+model Inventory{
+  id Int @id @default(autoincrement())
+  exchangeRate     ExchangeRate?   @relation(fields: [currency_code], references: [id],onDelete: SetNull)
+  currency_code    Int? 
+  office     OfficeLocation?   @relation(fields: [location], references: [id],onDelete: SetNull)
+  location    Int? 
+  amount Float  @default(0.00) 
+  on_hold Float @default(0.00)
+  purchase_rate Float @default(0.00)
+  onHold OnHold[]
+  branch_wholesale_inventory Branch_wholesale_inventory[] @relation(name: "receiver_inventory")
+  branch_wholesale_inventory_sender Branch_wholesale_inventory[] @relation(name: "sender_inventory")
+
+}
+
+model Wholesale{
+  id Int @id @default(autoincrement())
+  transaction_type String?
+  paid_by String?
+  amount Float  @default(0.00) 
+  type_of_currency String?
+  date DateTime
+  company String?
+  wholeseller_sale_rate String?
+  location String?
+  wholeseller_purchase_rate String?
+  branch_wholesale_inventory Branch_wholesale_inventory[]
+}
+
+model Setting{
+  id Int @id @default(autoincrement())
+  email String @db.Text
+}
+
+model OnHold{
+  id Int @id @default(autoincrement())
+  customer_name String?
+  phone_number String?
+  type_of_currency String?
+  currency_code String?
+  amount Float  @default(0.00)
+  pickup_date DateTime
+  released Boolean @default(false)
+  inventory     Inventory   @relation(fields: [inventory_id], references: [id],onDelete: Cascade)
+  inventory_id    Int 
+  office     OfficeLocation?   @relation(fields: [office_id], references: [id],onDelete: SetNull)
+  office_id    Int? 
+  createdAt DateTime @default(now())
+
+}
+model Branch_wholesale_inventory{
+  id Int @id @default(autoincrement())
+  wholesale     Wholesale?   @relation(fields: [wholesale_id], references: [id],onDelete: SetNull)
+  wholesale_id    Int? 
+  amount Float @default(0.00)
+  currency_code String?
+  currency_id Int?
+  received Boolean @default(false)
+  inventory          Inventory? @relation(name: "receiver_inventory", fields: [inventory_id], references: [id], onDelete: Cascade)
+  inventory_id       Int?
+  sender_inventory   Inventory? @relation(name: "sender_inventory", fields: [sender_inventory_id], references: [id], onDelete: Cascade)
+  sender_inventory_id Int?
+  
+
+}
+
+
+

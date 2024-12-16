@@ -1,0 +1,47 @@
+import { CartRow } from "../type/CartRow";
+
+export class CreateTradingDto {
+  code: string;
+  currency: string;
+  we_buy: string;
+  we_sell: string;
+  inventory: string;
+  on_hold: string;
+  select_currency: string;
+  pay_in: string;
+  checkbox_we_buy: boolean;
+  checkbox_we_sell: boolean;
+  checkbox3: boolean;
+  calculator_first_we_buy?: number;
+  calculator_first_we_sell?: number;
+  first_amount_input?: number;
+  second_amount_input?: number;
+  cash?: number;
+  money_order?: number;
+  interac?: number;
+  change?: number;
+  multiple_transactions?: boolean;
+  customer: string;
+  first_name: string;
+  last_name: string;
+  dob: string;
+  id_type: string;
+  id_number: string;
+  expiry_data: string;
+  place_of_issue: string;
+  phone: string;
+  address: string;
+  city: string;
+  province: string;
+  postal_code: string;
+  expiry_date: string;
+  occupation: string;
+  business_phone: string;
+  cartRows: CartRow[];
+  other_reasons: string;
+  unusual_behaviour: boolean;
+  hesitate_to_provide_id: boolean;
+  uncommon_question: boolean;
+  frequent_transaction: boolean;
+  red_flag: boolean;
+}

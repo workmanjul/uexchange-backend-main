@@ -1,0 +1,8 @@
+export const COOKIE_DOMAIN = "localhost";
+export const JWT_SECRET_TOKEN = "something";
+export const USERNAME = "";
+export const PASSWORD = "";
+export const SMTP_HOST = "";
+export const SMTP_USER = "";
+export const SMTP_PORT = 587;
+export const SMTP_PASSWORD = "";
